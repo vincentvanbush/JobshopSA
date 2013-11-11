@@ -12,6 +12,11 @@
 
 Graph::Graph(int n)
 {
+	/*
+		Konstruktor grafu o n wierzcholkach.
+		Inicjujemy listy poprzednikow i nastepnikow - lista nastepnikow jest potrzebna do DFS,
+		zas lista poprzednikow dla poszukiwania sciezek krytycznych.
+	*/
 	vertices_number = n;
 	outgoing_arcs.resize(n);
 	incoming_arcs.resize(n);
@@ -23,12 +28,19 @@ Graph::~Graph(void)
 
 int Graph::get_vertices_number()
 {
+	/*
+		Zwraca liczbe wierzcholkow w grafie.
+	*/
 	return vertices_number;
 }
 
 
 void Graph::add_arc(int from, int to, int length)
 {
+	/*
+		Dodawanie luku z from do to o dlugosci length - zarowno do listy poprzednikow, jak i
+		nastepnikow
+	*/
 	Arc outgoing_arc = { to, length };
 	Arc incoming_arc = { from, length };
 	outgoing_arcs[from].push_back(outgoing_arc);
@@ -37,6 +49,10 @@ void Graph::add_arc(int from, int to, int length)
 
 Arc Graph::get_arc(int from, int to)
 {
+	/*
+		Zwraca luk (nie wskaznik do luku!) z from do to, wyszukuje w lukach wychodzacych z from.
+		TODO: czy ta procedura jest w ogole potrzebna w public?
+	*/
 	for (Vertex::iterator it = outgoing_arcs[from].begin(); it != outgoing_arcs[from].end(); it++)
 		if (it->vertex_id == to)
 			return *it;
@@ -45,12 +61,18 @@ Arc Graph::get_arc(int from, int to)
 
 int Graph::get_arc_length(int from, int to)
 {
+	/*
+		Zwraca dlugosc luku z from do to.
+	*/
 	Arc a = get_arc(from, to);
 	return a.length;
 }
 
 void Graph::set_arc_length(int from, int to, int length)
 {
+	/*
+		Ustawia dlugosc luku z from do to na length. Modyfikuje obie listy sasiedztwa.
+	*/
 	bool ret = false;
 	for (Vertex::iterator it = outgoing_arcs[from].begin(); it != outgoing_arcs[from].end(); it++)
 		if (it->vertex_id == to)
@@ -69,6 +91,9 @@ void Graph::set_arc_length(int from, int to, int length)
 
 bool Graph::arc_exists(int from, int to)
 {
+	/*
+		Sprawdza, czy istnieje luk z from do to
+	*/
 	for (Vertex::iterator it = outgoing_arcs[from].begin(); it != outgoing_arcs[from].end(); it++)
 		if (it->vertex_id == to)
 			return true;
@@ -77,6 +102,9 @@ bool Graph::arc_exists(int from, int to)
 
 void Graph::delete_arc(int from, int to)
 {
+	/*
+		Usuwa luk z from do to. Modyfikuje obie listy sasiedztwa.
+	*/
 	bool erased = false;
 	for (Vertex::iterator it = outgoing_arcs[from].begin(); it != outgoing_arcs[from].end(); it++)
 		if (it->vertex_id == to)
@@ -98,6 +126,10 @@ void Graph::delete_arc(int from, int to)
 
 void Graph::invert_arc(int from, int to)
 {
+	/*
+		Odwraca luk z from do to, czyli usuwa luk z from do to i tworzy luk z to do from
+		o TEJ SAMEJ dlugosci.
+	*/
 	int length = get_arc(from, to).length;
 	delete_arc(from, to);
 	add_arc(to, from, length);
@@ -106,6 +138,14 @@ void Graph::invert_arc(int from, int to)
 
 deque<int> Graph::topological_sort() // result[i] = wierzcho³ek bêd¹cy i-tym w uszeregowaniu topologicznym
 {
+	/*
+		Zwraca porzadek topologiczny grafu (i-ty element wyniku to numer i-tego wierzcholka
+		w kolejnosci topologicznej) za pomoca metody DFS.
+		Korzystamy z prywatnych wektorow dfs_already_visited (ozn. wierzcholki juz przetworzone)
+		i dfs_temp_mark (wierzcholki aktualnie przetwarzane - potrzebny do ewentualnego wykrycia
+		cyklu, ktory jak wiemy nie moze sie u nas znalezc).
+		Jesli graf zawiera cykl, to zwracany jest pusty deque.
+	*/
 	topological_order.clear();
 	dfs_already_visited.resize(vertices_number); // alokacja pamiêci dla wektora ju¿ odwiedzonych wierzcho³ków
 	dfs_temp_mark.resize(vertices_number);
@@ -119,6 +159,10 @@ deque<int> Graph::topological_sort() // result[i] = wierzcho³ek bêd¹cy i-tym w u
 			dfs_visit_topo(i);
 	}
 
+	for (int i=0; i<topological_order.size(); i++)
+		debug("%d ", topological_order[i]);
+	debug("\n");
+
 	return (!cycle_flag) ? topological_order : deque<int>();
 
 }
@@ -126,6 +170,13 @@ deque<int> Graph::topological_sort() // result[i] = wierzcho³ek bêd¹cy i-tym w u
 
 vector<int> Graph::max_distances(int source)
 {
+	/*
+		Zwraca maksymalne odleglosci z source do kazdego wierzcholka.
+		Algorytm jest zmodyfikowana wersja procedury znajdowania minimalnych odleglosci w acyklicznym
+		grafie skierowanym (vide folie z wykladu) - modyfikacja polegala na zamienieniu +INFINITY
+		na 0 i min na max.
+		Moglem dopisac obok odpowiednie linie pseudokodu, ale chyba mi sie nie chcialo ;)
+	*/
 	int n = vertices_number;
 	vector<int> distance;
 	distance.resize(n);
@@ -135,6 +186,7 @@ vector<int> Graph::max_distances(int source)
 	for (int j=1; j<n; j++)
 		distance[topo[j]] = 0;
 
+	// tu uwaga: zewnetrzna petla uzywa j, wewnetrzna i (odpowiada to pseudokodowi z folii)
 	for (int j=1; j<n; j++)
 	{
 		for (int i=0; i<incoming_arcs[topo[j]].size(); i++)
@@ -156,6 +208,11 @@ vector<int> Graph::max_distances(int source)
 
 deque<int> Graph::critical_path(int source, int sink)
 {
+	/*
+		Zwraca przebieg sciezki krytycznej z source do sink na podstawie wektora maksymalnych
+		odleglosci z source.
+		Metoda zostala zaczerpnieta z folii z wykladu (odpowiedni pseudokod w komentarzach)
+	*/
 	vector<int> d = max_distances(source);
 
 	deque<int> path;						// STOS = []
@@ -185,15 +242,51 @@ deque<int> Graph::critical_path(int source, int sink)
 	return path;
 }
 
+void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
+{
+	/*
+		Metoda tworzy w grafie acyklicznie zorientowana klike zlozona z wierzcholkow vertices,
+		ze zrodlem w wierzcholku pierwszym i ujsciem w ostatnim.
+
+		Dziala to w ten sposob, ze dla kazdego kolejnego wierzcholka dodajemy luk zorientowany
+		w strone jego sasiadow, z ktorymi jeszcze nie jest polaczony (z pierwszego wierzcholka
+		tworzymy luki do wszystkich pozostalych, z drugiego do wszystkich poza pierwszym itd.)
+
+		Dodatkowo ustalamy dlugosci kazdego z lukow emanujacych z poszczegolnych wierzcholkow,
+		co bedzie przydatne w algorytmie szeregowania, poniewaz kazdy luk emanujacy z danego
+		wierzcholka powinien miec taka sama dlugosc.
+
+		(Nie wiem, czy nazwa "acyklicznie zorientowana klika" jest poprawna, ale chyba wiemy,
+		o co chodzi. Chodzi o utworzenie skierowanego odpowiednika nieskierowanej kliki,
+		czyli podgrafu pelnego...)
+	*/
+	for (int i=0; i<vertices.size(); i++)
+	{
+		int from = vertices[i];
+		for (int j = i+1; j < vertices.size(); j++)
+		{
+			debug("adding arc from %d to %d\n", from, vertices[j]);
+			add_arc(from, vertices[j], lengths[j]);
+		}
+	}
+
+}
+
 // Private
 
 void Graph::dfs_visit_topo(int node)
 {
+	/*
+		Glowna czesc procedury DFS dla sortowania topologicznego. Jezeli napotkamy wierzcholek, ktory
+		juz oznaczylismy jako aktualnie przetwarzany, ustawiamy flage wykrytego cyklu i wychodzimy.
+		Jesli flaga cyklu jest juz ustawiona, takze wychodzimy. :)
+	*/
 	if (cycle_flag) return;
 	if (dfs_temp_mark[node])
 	{
 		debug("---graph has cycle!!!\n");
 		cycle_flag = true;
+		return;
 	}
 	else if (!dfs_already_visited[node])
 	{
