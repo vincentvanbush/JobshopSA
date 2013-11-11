@@ -1,5 +1,7 @@
 #include "Graph.h"
 
+#define DEBUG
+
 #ifdef DEBUG
 #define debug(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -45,6 +47,24 @@ int Graph::get_arc_length(int from, int to)
 {
 	Arc a = get_arc(from, to);
 	return a.length;
+}
+
+void Graph::set_arc_length(int from, int to, int length)
+{
+	bool ret = false;
+	for (Vertex::iterator it = outgoing_arcs[from].begin(); it != outgoing_arcs[from].end(); it++)
+		if (it->vertex_id == to)
+		{
+			it->length = length;
+			ret = true;
+		}
+	for (Vertex::iterator it = incoming_arcs[to].begin(); it != incoming_arcs[to].end(); it++)
+		if (it->vertex_id == from)
+		{
+			it->length = length;
+			if (ret) return;
+		}
+	if (!ret) debug("set_arc_length(from=%d, to=%d): arc does not exist\n", from, to);
 }
 
 bool Graph::arc_exists(int from, int to)
@@ -127,6 +147,7 @@ vector<int> Graph::max_distances(int source)
 		}
 		
 	}
+	debug("max distances from %d to 0..%d respectively:\n", source, n-1);
 	for (int i=0; i<n; i++)
 		debug("%d ", distance[i]);
 	debug("\n");
@@ -139,21 +160,17 @@ deque<int> Graph::critical_path(int source, int sink)
 
 	deque<int> path;						// STOS = []
 	path.push_front(sink);					// STOS <- t
-	debug("pushing vertex %d\n", sink);
 	int v = sink;							// v := t
 
 	while (v != source)						// while v != s do
 	{										// begin
 		int u;
 		for (int i=0; i<incoming_arcs[v].size(); i++)
-			if (d[v] == d[incoming_arcs[v][i].vertex_id] + get_arc_length(incoming_arcs[v][i].vertex_id, v))
+			if (d[v] == d[incoming_arcs[v][i].vertex_id] + get_arc_length(incoming_arcs[v][i].vertex_id, v)) // incoming_arcs[v][i] - "kandydat" na u
 				{
 					u = incoming_arcs[v][i].vertex_id;	// u := wierzcholek, dla ktorego D(v) = D(u) + A(u, v)
-					debug("u=%d\n", u);
 					break;
 				}
-				
-		debug("pushing vertex %d\n", u);
 		path.push_front(u);					// STOS <- u
 		v = u;								// v := u
 	}										// end

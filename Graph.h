@@ -26,6 +26,7 @@ public:
 	void add_arc(int from, int to, int length);		// dodaje luk z from do to o dlugoœci length
 	Arc get_arc(int from, int to);					// zwraca dane luku z from do to
 	int get_arc_length(int from, int to);
+	void set_arc_length(int from, int to, int length);
 	bool arc_exists(int from, int to);				// okresla, czy istnieje luk z from do to
 	void delete_arc(int from, int to);				// usuwa luk z from do to
 	void invert_arc(int from, int to);				// odwraca zwrot luku z from do to (tworzac luk z to do from)
