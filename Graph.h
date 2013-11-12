@@ -19,6 +19,7 @@ typedef vector<Vertex> Vertices; // lista poprzednikow lub nastepnikow
 class Graph
 {
 public:
+	Graph(void);
 	Graph(int n); // konstruktor grafu o n wierzcholkach
 	~Graph(void);
 	int get_vertices_number(); // zwraca liczbe wierzcholkow grafu

@@ -12,6 +12,11 @@
 
 // Public
 
+Graph::Graph(void)
+{
+}
+
+
 Graph::Graph(int n)
 {
 	/*

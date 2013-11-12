@@ -3,12 +3,39 @@
 
 #include <cstdio>
 #include "Graph.h"
+#include "Schedule.h"
 
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-	printf("PRZYKLADOWY GRAF DYSJUNKCYJNY\n");
+	printf("TWORZENIE ROZWIAZANIA POCZATKOWEGO DLA PEWNEJ INSTANCJI\n");
+	//		machines	times
+	// J1	0,1,2		10,8,4
+	// J2	1,3,0,2		8,3,5,6
+ 	// J3	0,1,3		4,7,3
+
+	Schedule s(4);
+	vector<int> t1, m1, t2, m2, t3, m3;
+	// J1
+	t1.push_back(10);	t1.push_back(8);	t1.push_back(4);
+	m1.push_back(0);	m1.push_back(1);	m1.push_back(2);
+	// J2
+	t2.push_back(8);	t2.push_back(3);	t2.push_back(5);	t2.push_back(6);
+	m2.push_back(1);	m2.push_back(0);	m2.push_back(3);	m2.push_back(2);
+	// J3
+	t3.push_back(4);	t3.push_back(7);	t3.push_back(3);
+	m3.push_back(0);	m3.push_back(1);	m3.push_back(3);
+
+	s.add_job(t1, m1); // J1
+	s.add_job(t2, m2); // J2
+	s.add_job(t3, m3); // J3
+
+	s.create_graph();
+
+	printf("Cmax = %d\n", s.get_cmax());
+
+	printf("\n\nPRZYKLADOWY GRAF DYSJUNKCYJNY\n");
 	// http://i.imgur.com/mwUW5Dk.png
 	Graph sch(12);
 
