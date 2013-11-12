@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
 	sch.critical_path(0, 11);
 
-	sch.export();
+	sch.export_dot();
 
 	
 

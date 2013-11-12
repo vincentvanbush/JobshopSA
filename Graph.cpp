@@ -274,7 +274,7 @@ void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 
 }
 
-void Graph::export()
+void Graph::export_dot()
 {
 	FILE *f = fopen("graf.txt", "w");
 	fprintf(f, "digraph foo {\nrankdir=\"LR\";\n");
