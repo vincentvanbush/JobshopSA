@@ -1,4 +1,6 @@
 #include "Graph.h"
+#include <cstdio>
+
 
 #define DEBUG
 
@@ -265,11 +267,27 @@ void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 		int from = vertices[i];
 		for (int j = i+1; j < vertices.size(); j++)
 		{
-			debug("adding arc from %d to %d\n", from, vertices[j]);
-			add_arc(from, vertices[j], lengths[j]);
+			debug("adding arc from %d to %d of length %d\n", from, vertices[j], lengths[i]);
+			add_arc(from, vertices[j], lengths[i]);
 		}
 	}
 
+}
+
+void Graph::export()
+{
+	FILE *f = fopen("graf.txt", "w");
+	fprintf(f, "digraph foo {\nrankdir=\"LR\";\n");
+	for (int i=0; i<vertices_number; i++)
+	{
+		for (int j=0; j<outgoing_arcs[i].size(); j++)
+		{
+			fprintf(f, "%d -> %d [label=%d];\n", i, outgoing_arcs[i][j].vertex_id, outgoing_arcs[i][j].length);
+		}
+
+	}
+	fprintf(f, "}");
+	fclose(f);
 }
 
 // Private
