@@ -94,8 +94,13 @@ void Schedule::create_graph(void)
 
 	}
 
-
-	g.export_dot();
+	vector<vector<int> > clusters;
+	clusters.resize(jobs_number);
+	int n=1;
+	for (int i=0; i<jobs_number; i++)
+		for (int j=0; j<jobs[i].first.size(); j++)
+			clusters[i].push_back(n++);
+	g.export_dot(clusters);
 
 	this->graph = g;
 }
@@ -107,4 +112,46 @@ int Schedule::get_cmax(void)
 		Obliczamy dlugosc uszeregowania - sciezke krytyczna ze zrodla do ujscia grafu.
 	*/
 	return graph.max_distances(0).back();
+}
+
+vector<int> Schedule::get_start_times(void)
+{
+	/*
+		Zwraca momenty startu wszystkich operacji - w zasadzie jest to po prostu obliczenie
+		maksymalnych odleglosci w grafie ze zrodla do kazdego wierzcholka.
+		Wywalamy jednak pozycje pierwsza, ktora zawsze wynosi 0
+		Musza one zostac pozniej recznie oddzielone enterami na potrzeby outputu!
+	*/
+	vector<int> v = graph.max_distances(0);
+	v.erase(v.begin(), v.begin()+1);
+	v.pop_back();
+	return v;
+}
+
+vector<int> Schedule::get_job_lengths(void)
+{
+	vector<int> v;
+	for (int i=0; i<jobs.size(); i++)
+		v.push_back(jobs[i].first.size());
+	return v;
+}
+
+void Schedule::print_start_times(void)
+{
+	vector<int> times = get_start_times();
+	vector<int> jlengths = get_job_lengths();
+	int current_job_pos = 0;
+	int current_job = 0;
+	for (int i=0; i<times.size(); i++)
+	{
+		if (current_job_pos == jlengths[current_job])
+		{
+			current_job++;
+			current_job_pos = 0;
+			printf("\n");
+		}
+		printf("%d ", times[i]);
+		current_job_pos++;
+	}
+
 }

@@ -18,9 +18,13 @@ public:
 	void add_job(vector<int> times, vector<int> machines); // dodanie zlecenia 
 	void create_graph(void); // utworzenie grafu na podstawie juz istniejacych zlecen
 	int get_cmax(void); // zwraca Cmax
+	vector<int> get_start_times(void);
+	vector<int> get_job_lengths(void);
+	void print_start_times(void);
+	Graph graph; // graf dysjunkcyjny
 private:
 	Jobs jobs; // przechowuje zlecenia - kazde zlecenie ma postac pair<times, machines>
-	Graph graph; // graf dysjunkcyjny
+	
 	int operations_number; // sumaryczna liczba operacji
 	Machines machines; // wektor maszyn - kazda maszyna to wektor wierzcholkow reprez. operacje na niej wykonywane
 	vector<int> vertex_weights; // zawiera wagi lukow emanujacych z danych wierzcholkow
