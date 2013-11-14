@@ -34,7 +34,7 @@ public:
 	vector<int> max_distances(int source); // zwraca wektor dlugosci najdluzszych sciezek z source do kazdego wierzcholka
 	deque<int> critical_path(int source, int sink); // zwraca scieżke krytyczna z source do sink
 	void create_acyclic_clique(vector<int> vertices, vector<int> lengths); // tworzy w grafie acyklicznie zorientowana klike w ustalonym porzadku
-	void export_dot(); // eksportuje graf do języka DOT (na razie brzydko :<)
+	void export_dot(vector<vector<int> > clusters); // eksportuje graf do języka DOT (na razie brzydko :<)
 private:
 	void dfs_visit_topo(int node); // wywoluje procedure DFS dla sortowania topologicznego
 	deque<int> topological_order; // topologiczny porzadek wierzcholkow ustalony w metodzie topological_sort()

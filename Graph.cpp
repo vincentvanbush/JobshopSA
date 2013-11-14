@@ -1,7 +1,6 @@
 #include "Graph.h"
 #include <cstdio>
 
-
 #define DEBUG
 
 #ifdef DEBUG
@@ -279,10 +278,18 @@ void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 
 }
 
-void Graph::export_dot()
+void Graph::export_dot(vector<vector<int> > clusters)
 {
 	FILE *f = fopen("graf.txt", "w");
-	fprintf(f, "digraph foo {\nrankdir=\"LR\";\n");
+	fprintf(f, "digraph foo {\nrankdir=\"LR\";\npencolor=\"white\";");
+	for (int i=0; i<clusters.size(); i++)
+	{
+		fprintf(f, "subgraph cluster_%d {", i);
+		for (int j=0; j<clusters[i].size(); j++)
+			fprintf(f, "%d;", clusters[i][j]);
+		fprintf(f, "}\n");
+	}
+
 	for (int i=0; i<vertices_number; i++)
 	{
 		for (int j=0; j<outgoing_arcs[i].size(); j++)
