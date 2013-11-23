@@ -18,14 +18,14 @@ int main(int argc, char* argv[])
 	Schedule s(4);
 	vector<int> t1, m1, t2, m2, t3, m3;
 	// J1
-	t1.push_back(10);	t1.push_back(8);	t1.push_back(4);
-	m1.push_back(0);	m1.push_back(1);	m1.push_back(2);
+	t1.push_back(10);	t1.push_back(8);	t1.push_back(4);	t1.push_back(0);
+	m1.push_back(0);	m1.push_back(1);	m1.push_back(2);	m1.push_back(3);
 	// J2
 	t2.push_back(8);	t2.push_back(3);	t2.push_back(5);	t2.push_back(6);
 	m2.push_back(1);	m2.push_back(0);	m2.push_back(3);	m2.push_back(2);
 	// J3
-	t3.push_back(4);	t3.push_back(7);	t3.push_back(3);
-	m3.push_back(0);	m3.push_back(1);	m3.push_back(3);
+	t3.push_back(4);	t3.push_back(7);	t3.push_back(3);	t3.push_back(0);
+	m3.push_back(0);	m3.push_back(1);	m3.push_back(3);	m3.push_back(2);
 
 	s.add_job(t1, m1); // J1
 	s.add_job(t2, m2); // J2
@@ -34,6 +34,22 @@ int main(int argc, char* argv[])
 	s.create_graph();
 
 	printf("Cmax = %d\n", s.get_cmax());
+	printf("Start times:\n");
+	s.print_start_times();
+	/*
+	deque<int> d1 = s.graph.critical_path(0, 1);
+	deque<int> d2 = s.graph.critical_path(0, 2);
+	deque<int> d3 = s.graph.critical_path(0, 3);
+	deque<int> d4 = s.graph.critical_path(0, 4);
+	deque<int> d5 = s.graph.critical_path(0, 5);
+	deque<int> d6 = s.graph.critical_path(0, 6);
+	deque<int> d7 = s.graph.critical_path(0, 7);
+	deque<int> d8 = s.graph.critical_path(0, 8);
+	deque<int> d9 = s.graph.critical_path(0, 9);
+	deque<int> d10 = s.graph.critical_path(0, 10);
+	deque<int> d11 = s.graph.critical_path(0, 11);
+	*/
+	printf("\n");
 
 	printf("\n\nPRZYKLADOWY GRAF DYSJUNKCYJNY\n");
 	// http://i.imgur.com/mwUW5Dk.png
@@ -80,7 +96,7 @@ int main(int argc, char* argv[])
 
 	sch.critical_path(0, 11);
 
-	sch.export_dot();
+	//sch.export_dot(vector<vector<int> >());
 
 	
 
