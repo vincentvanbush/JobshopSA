@@ -1,4 +1,5 @@
 #include "Schedule.h"
+
 #define DEBUG
 
 #ifdef DEBUG
@@ -7,6 +8,14 @@
 #define debug(...) /*(__VA_ARGS__)*/
 #endif
 
+//na potrzeby solve_using_SA():
+#define WARMING 1
+#define COOLING 0
+#define INITIAL_TEMPERATURE 0
+#define ALPHA_WARMING 1.5
+#define ALPHA_COOLING 0.95
+#define TIME_EXCEEDED false
+#define MODULATION 1
 Schedule::Schedule(int machines)
 {
 	/*
@@ -154,4 +163,97 @@ void Schedule::print_start_times(void)
 		current_job_pos++;
 	}
 
+
+}
+
+bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
+{
+	srand(time(NULL));
+	int chance = rand() % 2;
+	double result = exp((cmax - new_cmax)/(temperature * MODULATION));
+	if((double)chance >= result)
+		return true;
+	else
+		return false;
+}
+
+vector<int> Schedule::select_arc(deque<int> critpath)
+{
+	srand(time(NULL));
+	int dice_roll = rand() % operations_number; 
+	vector<int> selected_arc;
+	selected_arc.resize(2);
+	selected_arc[0] = critpath[dice_roll];
+	selected_arc[1] = critpath[dice_roll + 1];
+	return selected_arc;
+}
+
+void Schedule::solve_using_SA(void)
+{
+	int mode; //ogrzewamy / oziebiamy
+	int move_acceptance;
+	double temperature;
+	int cmax;
+	create_graph();
+	deque<int> crit_path;
+	mode = WARMING;
+	move_acceptance = 0;
+	temperature = INITIAL_TEMPERATURE;
+	vector<int> random_arc;
+	random_arc.resize(2);
+	int new_cmax;
+
+	bool cold_as_ice = false; //nie udalo sie wykonac X ruchow - za niska temp
+	//powyzsze mozna chyba wywalic, bo wiaze sie z tym failed_moves
+	bool cmax_is_optimal = false; //przydaloby sie odczytac boundy z instancji i jesli trafilismy, to przerwac petlle while
+	int failed_moves = 0;
+
+	while(failed_moves < 1000 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
+	{
+		crit_path = graph.critical_path(0, operations_number + 1);
+		cmax = get_cmax();
+		random_arc = select_arc(crit_path);
+
+		if(!(random_arc[0] == 0 || random_arc[1] == operations_number + 1 || (random_arc[1] - random_arc[0] == 1))) //jesli nie jest koniunkcyjny
+		{
+			graph.invert_arc(random_arc[0], random_arc[1]);
+			graph.set_arc_length(random_arc[1], vertex_weights[random_arc[1]], random_arc[0]);
+		}
+
+		new_cmax = get_cmax();
+
+		if(new_cmax < cmax)
+		{
+			move_acceptance++;
+			cmax = new_cmax;
+		}
+		else
+		{
+			if(success_chance(cmax, new_cmax, temperature) == true)
+			{
+				failed_moves = 0;
+				move_acceptance++;
+				cmax = new_cmax;
+			}
+			else // success_chance == false, brak szansy na powodzenie ruchu
+			{
+				failed_moves++;
+				if(mode == WARMING)
+				{
+					move_acceptance = 0;
+					temperature *= ALPHA_WARMING;
+					graph.invert_arc(random_arc[1], random_arc[0]);
+					graph.set_arc_length(random_arc[0], vertex_weights[random_arc[0]], random_arc[1]);
+				}
+			}
+		}
+
+		if(mode == WARMING && move_acceptance == 100)
+			mode == COOLING;
+		else if(mode == COOLING && move_acceptance == 100)
+			temperature *= ALPHA_COOLING;
+	}
+
+	printf("\nCMAX = %d\n", get_cmax());
+	print_start_times();
 }
