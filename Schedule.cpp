@@ -12,8 +12,8 @@
 #define WARMING 1
 #define COOLING 0
 #define INITIAL_TEMPERATURE 25
-#define ALPHA_WARMING 1.02
-#define ALPHA_COOLING 0.995
+#define ALPHA_WARMING 0.02
+#define ALPHA_COOLING 0.02
 #define TIME_EXCEEDED false
 #define MODULATION 1
 Schedule::Schedule(int machines)
@@ -179,7 +179,6 @@ bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
 
 vector<int> Schedule::select_arc(deque<int> critpath)
 {
-	srand(time(NULL));
 	int dice_roll = (rand() % (critpath.size() - 3)) + 1; 
 	vector<int> selected_arc;
 	selected_arc.resize(2);
@@ -190,6 +189,7 @@ vector<int> Schedule::select_arc(deque<int> critpath)
 
 void Schedule::solve_using_SA(void)
 {
+	srand(time(NULL));
 	int mode; //ogrzewamy / oziebiamy
 	int move_acceptance;
 	double temperature;
@@ -210,19 +210,22 @@ void Schedule::solve_using_SA(void)
 	//powyzsze mozna chyba wywalic, bo wiaze sie z tym failed_moves
 	bool cmax_is_optimal = false; //przydaloby sie odczytac boundy z instancji i jesli trafilismy, to przerwac petlle while
 	int failed_moves = 0;
+	int max_temperature;
 
-	while(failed_moves < 1000 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
+	while(failed_moves < 200 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
 	{
-		
-
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
 		cmax = get_cmax();
 
+		int attempts = 0;
 		do
+		{
 			random_arc = select_arc(crit_path);
+			++attempts;
+		}
 		while (random_arc[0] == 0 || random_arc[1] == operations_number + 1 || (random_arc[1] - random_arc[0] == 1));
-		
+		debug("[%d] ", attempts);
 
 		graph.invert_arc(random_arc[0], random_arc[1]);
 		graph.set_arc_length(random_arc[1], random_arc[0], vertex_weights[random_arc[1]]);
@@ -253,7 +256,7 @@ void Schedule::solve_using_SA(void)
 				if(mode == WARMING)
 				{
 					move_acceptance = 0;
-					temperature *= ALPHA_WARMING;
+					temperature += ALPHA_WARMING * INITIAL_TEMPERATURE;
 					graph.invert_arc(random_arc[1], random_arc[0]);
 					graph.set_arc_length(random_arc[0], random_arc[1], vertex_weights[random_arc[0]]);
 				}
@@ -265,16 +268,19 @@ void Schedule::solve_using_SA(void)
 		debug("\tacc=%d rej=%d", move_acceptance, failed_moves);
 		
 
-		if (mode == WARMING && move_acceptance >= 100)
+		if (mode == WARMING && move_acceptance >= 50)
 		{
 			move_acceptance = 0;
 			mode = COOLING;
+			max_temperature = temperature;
 		}
 			
 			
 		else if (mode == COOLING && move_acceptance >= 100)
 		{
-			temperature *= ALPHA_COOLING;
+
+			temperature -= ALPHA_COOLING * max_temperature;
+			if (temperature < 0) { temperature = 0; cold_as_ice = true; };
 			move_acceptance = 0;
 		}
 			
@@ -283,8 +289,8 @@ void Schedule::solve_using_SA(void)
 	}
 
 	debug("Stopped due to ");
-	if (!(failed_moves < 1000))
-		debug("failed_moves >= 1000");
+	if (!(failed_moves < 200))
+		debug("failed_moves >= limit");
 	else if (cold_as_ice)
 		debug("cold as ice");
 
