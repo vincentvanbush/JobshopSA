@@ -14,8 +14,8 @@
 #define INITIAL_TEMPERATURE 25
 #define ALPHA_WARMING 0.1
 #define ALPHA_COOLING 0.02
-#define TIME_EXCEEDED false
 #define MODULATION 1
+
 Schedule::Schedule(int machines)
 {
 	/*
@@ -204,15 +204,21 @@ void Schedule::solve_using_SA(void)
 	vector<int> random_arc;
 	random_arc.resize(2);
 	int new_cmax;
-
+	bool time_exceeded;
 	bool cold_as_ice = false; //nie udalo sie wykonac X ruchow - za niska temp
 	//powyzsze mozna chyba wywalic, bo wiaze sie z tym failed_moves
 	bool cmax_is_optimal = false; //przydaloby sie odczytac boundy z instancji i jesli trafilismy, to przerwac petlle while
 	int failed_moves = 0;
 	int max_temperature;
 
-	while(failed_moves < 500 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
+	//mierzenie czasu
+	struct timespec start, stop;
+ 	double totaltime = 0.0;
+ 	clock_gettime(CLOCK_REALTIME, &start);
+
+	while(failed_moves < 500 && !cold_as_ice && !cmax_is_optimal && !time_exceeded)
 	{
+
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
 		cmax = get_cmax();
@@ -280,11 +286,23 @@ void Schedule::solve_using_SA(void)
 		{
 
 			temperature -= ALPHA_COOLING * max_temperature;
-			if (temperature < 0) { temperature = 0; cold_as_ice = true; };
+			if (temperature < 0) 
+			{ 
+				temperature = 0; 
+				cold_as_ice = true; 
+			}
 			move_acceptance = 0;
 		}
 			
+		clock_gettime(CLOCK_REALTIME, &stop);
+		totaltime += (double) (stop.tv_sec - start.tv_sec)+1.e-9*(stop.tv_nsec - start.tv_nsec);
 		
+		//jesli przekroczono okreslona liczbe sekund
+		if(totaltime > 180.0)
+			time_exceeded = true;
+		
+		clock_gettime(CLOCK_REALTIME, &start);
+
 		debug("\n");
 	}
 
@@ -293,6 +311,8 @@ void Schedule::solve_using_SA(void)
 		debug("failed_moves >= limit");
 	else if (cold_as_ice)
 		debug("cold as ice");
+	else if(time_exceeded)
+		debug("time exceeded");
 
 	debug("\n%d\n", get_cmax());
 	print_start_times();
