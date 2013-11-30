@@ -12,7 +12,7 @@
 #define WARMING 1
 #define COOLING 0
 #define INITIAL_TEMPERATURE 25
-#define ALPHA_WARMING 0.02
+#define ALPHA_WARMING 0.1
 #define ALPHA_COOLING 0.02
 #define TIME_EXCEEDED false
 #define MODULATION 1
@@ -168,7 +168,6 @@ void Schedule::print_start_times(void)
 
 bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
 {
-	srand(time(NULL));
 	int chance = rand() % 2;
 	double result = exp((cmax - new_cmax)/(temperature * MODULATION));
 	if((double)chance >= result)
@@ -179,7 +178,7 @@ bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
 
 vector<int> Schedule::select_arc(deque<int> critpath)
 {
-	int dice_roll = (rand() % (critpath.size() - 3)) + 1; 
+	int dice_roll = (rand() % (critpath.size() - 2)) + 1; 
 	vector<int> selected_arc;
 	selected_arc.resize(2);
 	selected_arc[0] = critpath[dice_roll];
@@ -212,7 +211,7 @@ void Schedule::solve_using_SA(void)
 	int failed_moves = 0;
 	int max_temperature;
 
-	while(failed_moves < 200 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
+	while(failed_moves < 500 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
 	{
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
@@ -225,7 +224,8 @@ void Schedule::solve_using_SA(void)
 			++attempts;
 		}
 		while (random_arc[0] == 0 || random_arc[1] == operations_number + 1 || (random_arc[1] - random_arc[0] == 1));
-		debug("[%d] ", attempts);
+		debug("[%d attempts] ", attempts);
+		
 
 		graph.invert_arc(random_arc[0], random_arc[1]);
 		graph.set_arc_length(random_arc[1], random_arc[0], vertex_weights[random_arc[1]]);
@@ -237,7 +237,7 @@ void Schedule::solve_using_SA(void)
 		{
 			move_acceptance++;
 			cmax = new_cmax;
-			debug(" BETTER -> ACCEPTED\t");
+			debug(" better -> acc\t");
 			failed_moves = 0;
 		}
 		else
@@ -247,11 +247,11 @@ void Schedule::solve_using_SA(void)
 				failed_moves = 0;
 				move_acceptance++;
 				cmax = new_cmax;
-				debug(" WORSE -> ACCEPTED\t");
+				debug(" worse -> acc\t");
 			}
 			else // success_chance == false, brak szansy na powodzenie ruchu
 			{
-				debug(" WORSE -> REJECTED\t");
+				debug(" worse -> rej\t");
 				failed_moves++;
 				if(mode == WARMING)
 				{
@@ -268,7 +268,7 @@ void Schedule::solve_using_SA(void)
 		debug("\tacc=%d rej=%d", move_acceptance, failed_moves);
 		
 
-		if (mode == WARMING && move_acceptance >= 50)
+		if (mode == WARMING && move_acceptance >= 20)
 		{
 			move_acceptance = 0;
 			mode = COOLING;
@@ -289,7 +289,7 @@ void Schedule::solve_using_SA(void)
 	}
 
 	debug("Stopped due to ");
-	if (!(failed_moves < 200))
+	if (!(failed_moves < 500))
 		debug("failed_moves >= limit");
 	else if (cold_as_ice)
 		debug("cold as ice");
