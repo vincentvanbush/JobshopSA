@@ -11,10 +11,10 @@
 //na potrzeby solve_using_SA():
 #define WARMING 1
 #define COOLING 0
-#define INITIAL_TEMPERATURE 25
-#define ALPHA_WARMING 0.1
-#define ALPHA_COOLING 0.02
-#define MODULATION 1
+#define INITIAL_TEMPERATURE 100
+#define ALPHA_WARMING 1
+#define ALPHA_COOLING 0.85
+#define MODULATION 2
 
 Schedule::Schedule(int machines)
 {
@@ -30,7 +30,7 @@ Schedule::Schedule(int machines)
 
 
 Schedule::~Schedule()
-{
+{ 
 }
 
 
@@ -103,13 +103,7 @@ void Schedule::create_graph(void)
 
 	}
 
-	vector<vector<int> > clusters;
-	clusters.resize(jobs_number);
-	int n=1;
-	for (int i=0; i<jobs_number; i++)
-		for (int j=0; j<jobs[i].first.size(); j++)
-			clusters[i].push_back(n++);
-	g.export_dot(clusters);
+	
 
 	this->graph = g;
 }
@@ -168,12 +162,14 @@ void Schedule::print_start_times(void)
 
 bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
 {
-	int chance = rand() % 2;
+	//int chance = rand() % 2;
+	double chance = ((double)rand() / (RAND_MAX));
 	double result = exp((cmax - new_cmax)/(temperature * MODULATION));
-	if((double)chance >= result)
+	if(chance <= result)
 		return true;
 	else
 		return false;
+	
 }
 
 vector<int> Schedule::select_arc(deque<int> critpath)
@@ -193,10 +189,12 @@ void Schedule::solve_using_SA(void)
 	int move_acceptance;
 	double temperature;
 	int cmax;
+	int best_cmax;
 	create_graph();
-	
-	printf("begin with cmax = %d\n", get_cmax());
 
+	best_cmax = get_cmax();
+	debug("begin with cmax = %d\n", best_cmax);
+	
 	deque<int> crit_path;
 	mode = WARMING;
 	move_acceptance = 0;
@@ -208,7 +206,7 @@ void Schedule::solve_using_SA(void)
 	bool cold_as_ice = false; //nie udalo sie wykonac X ruchow - za niska temp
 	//powyzsze mozna chyba wywalic, bo wiaze sie z tym failed_moves
 	bool cmax_is_optimal = false; //przydaloby sie odczytac boundy z instancji i jesli trafilismy, to przerwac petlle while
-	int failed_moves = 0;
+	int moves_without_improvement = 0;
 	int max_temperature;
 
 	//mierzenie czasu
@@ -216,9 +214,8 @@ void Schedule::solve_using_SA(void)
  	double totaltime = 0.0;
  	clock_gettime(CLOCK_REALTIME, &start);
 
-	while(failed_moves < 500 && !cold_as_ice && !cmax_is_optimal && !time_exceeded)
+	while (moves_without_improvement < 1000 && !cold_as_ice && !cmax_is_optimal && !TIME_EXCEEDED)
 	{
-
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
 		cmax = get_cmax();
@@ -239,42 +236,55 @@ void Schedule::solve_using_SA(void)
 		new_cmax = get_cmax();
 		debug("cmax = %d\t", new_cmax);
 
-		if(new_cmax <= cmax)
+		if(new_cmax < cmax)
 		{
 			move_acceptance++;
 			cmax = new_cmax;
 			debug(" better -> acc\t");
-			failed_moves = 0;
+			if (new_cmax <= best_cmax)
+			{
+				moves_without_improvement = 0;
+				best_cmax = new_cmax;
+			}
+				
+		}
+		else if (new_cmax == cmax)
+		{
+			//move_acceptance++;
+			debug("the same\t");
+			moves_without_improvement++;
 		}
 		else
 		{
 			if(success_chance(cmax, new_cmax, temperature) == true)
 			{
-				failed_moves = 0;
+				//failed_moves = 0;
 				move_acceptance++;
 				cmax = new_cmax;
 				debug(" worse -> acc\t");
+				moves_without_improvement++;
 			}
 			else // success_chance == false, brak szansy na powodzenie ruchu
 			{
 				debug(" worse -> rej\t");
-				failed_moves++;
+				moves_without_improvement++;
 				if(mode == WARMING)
 				{
 					move_acceptance = 0;
 					temperature += ALPHA_WARMING * INITIAL_TEMPERATURE;
-					graph.invert_arc(random_arc[1], random_arc[0]);
-					graph.set_arc_length(random_arc[0], random_arc[1], vertex_weights[random_arc[0]]);
+					
 				}
+				graph.invert_arc(random_arc[1], random_arc[0]);
+				graph.set_arc_length(random_arc[0], random_arc[1], vertex_weights[random_arc[0]]);
 			}
 		}
 
 		debug("T=%4.2f\t", temperature);
 		debug(mode == WARMING ? "+" : "-");
-		debug("\tacc=%d rej=%d", move_acceptance, failed_moves);
+		debug("\tacc=%d rej=%d", move_acceptance, moves_without_improvement);
 		
 
-		if (mode == WARMING && move_acceptance >= 20)
+		if (mode == WARMING && move_acceptance >= 100)
 		{
 			move_acceptance = 0;
 			mode = COOLING;
@@ -285,12 +295,8 @@ void Schedule::solve_using_SA(void)
 		else if (mode == COOLING && move_acceptance >= 100)
 		{
 
-			temperature -= ALPHA_COOLING * max_temperature;
-			if (temperature < 0) 
-			{ 
-				temperature = 0; 
-				cold_as_ice = true; 
-			}
+			temperature *= ALPHA_COOLING;
+			if (temperature < 0) { temperature = 0; cold_as_ice = true; };
 			move_acceptance = 0;
 		}
 			
@@ -307,13 +313,21 @@ void Schedule::solve_using_SA(void)
 	}
 
 	debug("Stopped due to ");
-	if (!(failed_moves < 500))
-		debug("failed_moves >= limit");
+	if (!(moves_without_improvement < 1000))
+		debug("moves_without_improvement >= limit");
 	else if (cold_as_ice)
 		debug("cold as ice");
 	else if(time_exceeded)
 		debug("time exceeded");
 
-	debug("\n%d\n", get_cmax());
+	vector<vector<int> > clusters;
+	clusters.resize(jobs.size());
+	int n = 1;
+	for (int i = 0; i<clusters.size(); i++)
+	for (int j = 0; j<jobs[i].first.size(); j++)
+		clusters[i].push_back(n++);
+	graph.export_dot(clusters);
+
+	printf("%d\n", get_cmax());
 	print_start_times();
 }
