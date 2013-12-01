@@ -1,7 +1,7 @@
 #include "Graph.h"
 #include <cstdio>
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define debug(...) fprintf(stderr, __VA_ARGS__)
@@ -205,10 +205,12 @@ vector<int> Graph::max_distances(int source)
 		}
 		
 	}
+
 	debug("max distances from %d to 0..%d respectively:\n", source, n-1);
 	for (int i=0; i<n; i++)
 		debug("%d ", distance[i]);
 	debug("\n");
+
 	return distance;
 }
 
@@ -224,7 +226,7 @@ deque<int> Graph::critical_path(int source, int sink)
 	deque<int> path;						// STOS = []
 	path.push_front(sink);					// STOS <- t
 	int v = sink;							// v := t
-
+	bool excess = false;
 	while (v != source)						// while v != s do
 	{										// begin
 		int u;
@@ -236,14 +238,18 @@ deque<int> Graph::critical_path(int source, int sink)
 				}
 		path.push_front(u);					// STOS <- u
 		v = u;								// v := u
+		if (path.size() > 1000 && !excess) { debug("Excessive path size!\n"); excess = true; }
 	}										// end
 
-	debug("path.size() = %d\n", path.size());
+	//printf("path.size() = %d\n", path.size());
 
 	debug("critical path from %d to %d: ", source, sink);
 	for (int i=0; i<path.size(); i++)
 		debug("%d ", path[i]);
 	debug("\n");
+
+	
+	
 
 	return path;
 }
