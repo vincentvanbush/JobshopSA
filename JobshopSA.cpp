@@ -67,12 +67,12 @@ int main(int argc, char* argv[])
  		if (limit > 0 && limit <= noJobs) 
  			noJobs = limit;
  		int i, j;
-		for(i = 0; i < noJobs; i++)
+		for(int i = 0; i < noJobs; i++)
 		{
 			m.clear();
 			t.clear();
 
-			for(j = 0; j < noMachines; j++)
+			for(int j = 0; j < noMachines; j++)
 			{
 				int machine_tmp, time_tmp;
 				fscanf(source, "%d %d ", &machine_tmp, &time_tmp);
@@ -100,17 +100,17 @@ int main(int argc, char* argv[])
 		//resize: liczba wierszy to liczba jobow, 
 		//liczba kolumn nie okreslona (bo robimy push_back)
 		tailard_times.resize(noJobs);
-		for(i = 0; i < noJobs; i++)
+		for(int i = 0; i < noJobs; i++)
 			tailard_times[i].clear();
 		// odczytalismy już noJobs i noMachines, teraz pomijamy smieci z pierwszego wiersza
 		char skip[256];
 		void *result = fgets(skip, 256, source);
 		// pomijamy smieci ("Times")
 		result = fgets(skip, 100, source);
-		int i, j;
-		for(i = 0; i < noJobs; i++)
+		
+		for(int i = 0; i < noJobs; i++)
 		{			
-			for(j = 0; j < noMachines; j++)
+			for(int j = 0; j < noMachines; j++)
 			{
 				int time_tmp;
 				fscanf(source, "%d ", &time_tmp);
@@ -118,17 +118,17 @@ int main(int argc, char* argv[])
 			}
 		}
 		// pomijamy reszte zadan
-		for (i = 0; i < redundant_tasks; i++)
+		for (int i = 0; i < redundant_tasks; i++)
 		{
 			result = fgets(skip, 256, source);
 		}
 		// pomijamy smieci ("Machines")
 		result = fgets(skip, 100, source);
-		for(i = 0; i < noJobs; i++)
+		for(int i = 0; i < noJobs; i++)
 		{
 			m.clear();
 
-			for(j = 0; j < noMachines; j++)
+			for(int j = 0; j < noMachines; j++)
 			{
 				int machine_tmp;
 				fscanf(source, "%d ", &machine_tmp);
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 			s.add_job(tailard_times[i], m);
 		}
 		// pomijamy reszte zadan
-		for (i = 0; i < redundant_tasks; i++)
+		for (int i = 0; i < redundant_tasks; i++)
 		{
 			result = fgets(skip, 256, source);
 		}
