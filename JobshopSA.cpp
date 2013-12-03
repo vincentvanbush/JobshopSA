@@ -167,8 +167,6 @@ int main(int argc, char* argv[])
 	FILE *times;
 	times = fopen(buffer, "w");
 	fprintf(times, "%s\t%d\t%d\t%f\t%d\n", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
-
-	return 0;
 	if(fclose(times) != 0)
 		printf("Blad zamkniecia pliku %s!\n", buffer);
 
