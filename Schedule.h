@@ -23,7 +23,7 @@ public:
 	int get_cmax(void); // zwraca Cmax
 	vector<int> get_start_times(void);
 	vector<int> get_job_lengths(void);
-	void solve_using_SA(void);
+	double solve_using_SA(void);
 	bool success_chance(int cmax, int new_cmax, double temperature);
 	vector<int> select_arc(deque<int> critpath);
 	void print_start_times(void);

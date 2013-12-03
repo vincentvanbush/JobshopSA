@@ -184,7 +184,7 @@ vector<int> Schedule::select_arc(deque<int> critpath)
 	return selected_arc;
 }
 
-void Schedule::solve_using_SA(void)
+double Schedule::solve_using_SA(void)
 {
 	srand(time(NULL));
 	int mode; //ogrzewamy / oziebiamy
@@ -216,7 +216,7 @@ void Schedule::solve_using_SA(void)
  	double totaltime = 0.0;
  	clock_gettime(CLOCK_REALTIME, &start);
 
-	while (moves_without_improvement < 1000 && !cold_as_ice && !cmax_is_optimal && !time_exceeded)
+	while (moves_without_improvement < 1000 && !cmax_is_optimal && !time_exceeded)
 	{
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
@@ -298,11 +298,6 @@ void Schedule::solve_using_SA(void)
 		{
 
 			temperature *= ALPHA_COOLING;
-			if (temperature < 0) 
-			{
-				temperature = 0; 
-				cold_as_ice = true; 
-			}
 			move_acceptance = 0;
 		}
 
@@ -321,8 +316,6 @@ void Schedule::solve_using_SA(void)
 	debug("Stopped due to: ");
 	if (!(moves_without_improvement < 1000))
 		debug("moves_without_improvement >= limit");
-	else if (cold_as_ice)
-		debug("cold as ice");
 	else if(time_exceeded)
 		debug("time exceeded");
 /*
@@ -336,4 +329,5 @@ void Schedule::solve_using_SA(void)
 */
 	printf("%d\n", get_cmax());
 	print_start_times();
+	return totaltime;
 }

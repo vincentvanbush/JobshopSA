@@ -153,13 +153,25 @@ int main(int argc, char* argv[])
 			result = fgets(skip, 256, source);
 		}
 	}
+
 	if(fclose(source) != 0)
 		printf("Blad zamkniecia pliku %s!\n", argv[1]);
 	
-
 	//rozwiazanie metoda simulated annealing
-	s.solve_using_SA();
-	return 0;
+	double totaltime = s.solve_using_SA();
 
+	//zapisywanie wynikow jakosciowych do pliku
+        
+        char buffer[40];
+	sprintf(buffer, "wyniki_%d_%s", noJobs, argv[1]);
+	FILE *times;
+	times = fopen(buffer, "w");
+	fprintf(times, "%s\t%d\t%d\t%f\t%d\n", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
+
+	return 0;
+	if(fclose(times) != 0)
+		printf("Blad zamkniecia pliku %s!\n", buffer);
+
+	return 0;
 }
 
