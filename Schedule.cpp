@@ -298,7 +298,11 @@ void Schedule::solve_using_SA(void)
 		{
 
 			temperature *= ALPHA_COOLING;
-			if (temperature < 0) { temperature = 0; cold_as_ice = true; };
+			if (temperature < 0) 
+			{
+				temperature = 0; 
+				cold_as_ice = true; 
+			}
 			move_acceptance = 0;
 		}
 

@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 		jobshop inst_file - Beasley (default)
 		jobshop inst_file {T|B} - Taillard/Beasley
 		jobshop inst_file {T|B} n - Beasley lub Taillard z ograniczeniem
-								do n pierwszych maszyn
+								do n pierwszych zadan
 	*/
 	if (argc == 1)
 	{
@@ -71,7 +71,9 @@ int main(int argc, char* argv[])
 		{
 			m.clear();
 			t.clear();
-
+			//poniewaz czytamy ba biezaco czas i maszyne dla danej operacji,
+			//to mozemy 2 wektory pomocnicze wykorzystac dla kazdego zadania
+			//(wystarcza 2 pomocnicze)
 			for(int j = 0; j < noMachines; j++)
 			{
 				int machine_tmp, time_tmp;
@@ -96,12 +98,20 @@ int main(int argc, char* argv[])
 
 		//tablica 2d (wektor wektorow) do przechowywania czasow
 		//potrzebna tylko do instancji taillarda
+		//(musimy na raz zapamietac wszystkie czasy, w przeciwienstwie do beasley'a)
 		vector<vector<int> > tailard_times;
 		//resize: liczba wierszy to liczba jobow, 
 		//liczba kolumn nie okreslona (bo robimy push_back)
 		tailard_times.resize(noJobs);
 		for(int i = 0; i < noJobs; i++)
+		{
+			tailard_times[i].resize(0);
+		}
+
+		for(int i = 0; i < noJobs; i++)
+		{
 			tailard_times[i].clear();
+		}
 		// odczytalismy już noJobs i noMachines, teraz pomijamy smieci z pierwszego wiersza
 		char skip[256];
 		void *result = fgets(skip, 256, source);
@@ -127,12 +137,13 @@ int main(int argc, char* argv[])
 		for(int i = 0; i < noJobs; i++)
 		{
 			m.clear();
-
+			//tutaj vector m tez jest wykorzystywany wiele razy
 			for(int j = 0; j < noMachines; j++)
 			{
 				int machine_tmp;
 				fscanf(source, "%d ", &machine_tmp);
-				m.push_back(machine_tmp);
+				m.push_back(machine_tmp-1);
+				// -1 bo w instancjach tai maszyny sa numerowane od 1
 			}
 			s.add_job(tailard_times[i], m);
 		}
@@ -145,6 +156,8 @@ int main(int argc, char* argv[])
 	if(fclose(source) != 0)
 		printf("Blad zamkniecia pliku %s!\n", argv[1]);
 	
+
+	//rozwiazanie metoda simulated annealing
 	s.solve_using_SA();
 	return 0;
 
