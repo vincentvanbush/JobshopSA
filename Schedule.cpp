@@ -8,15 +8,8 @@
 #define debug(...) /*(__VA_ARGS__)*/
 #endif
 
-//na potrzeby solve_using_SA():
 #define WARMING 1
 #define COOLING 0
-#define INITIAL_TEMPERATURE 100
-#define ALPHA_WARMING 1
-#define ALPHA_COOLING 0.85
-#define MODULATION 1
-#define COOLING_AGE_LENGTH 300
-#define WARMING_THRESHOLD 200
 
 Schedule::Schedule(int machines)
 {
@@ -162,11 +155,11 @@ void Schedule::print_start_times(void)
 
 }
 
-bool Schedule::success_chance(int cmax, int new_cmax, double temperature)
+bool Schedule::success_chance(int cmax, int new_cmax, double temperature, double modulation)
 {
 	//int chance = rand() % 2;
 	double chance = ((double)rand() / (RAND_MAX));
-	double result = exp((cmax - new_cmax)/(temperature * MODULATION));
+	double result = exp((cmax - new_cmax)/(temperature * modulation));
 	if(chance <= result)
 		return true;
 	else
@@ -184,8 +177,9 @@ vector<int> Schedule::select_arc(deque<int> critpath)
 	return selected_arc;
 }
 
-double Schedule::solve_using_SA(void)
+double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, double alpha_cooling = 0.85, int cooling_age_length = 300, double warming_threshold = 0.9, int max_moves_without_improvement = 1000)
 {
+
 	srand(time(NULL));
 	int mode; //ogrzewamy / oziebiamy
 	int move_acceptance;
@@ -216,7 +210,7 @@ double Schedule::solve_using_SA(void)
  	double totaltime = 0.0;
  	clock_gettime(CLOCK_REALTIME, &start);
 
-	while (moves_without_improvement < 1000 && !cmax_is_optimal && !time_exceeded)
+	while (moves_without_improvement < max_moves_without_improvement && !cmax_is_optimal && !time_exceeded)
 	{
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
@@ -258,7 +252,7 @@ double Schedule::solve_using_SA(void)
 		}
 		else
 		{
-			if(success_chance(cmax, new_cmax, temperature) == true)
+			if(success_chance(cmax, new_cmax, temperature, modulation) == true)
 			{
 				//failed_moves = 0;
 				move_acceptance++;
@@ -273,7 +267,7 @@ double Schedule::solve_using_SA(void)
 				if(mode == WARMING)
 				{
 					move_acceptance = 0;
-					temperature += ALPHA_WARMING * INITIAL_TEMPERATURE;
+					temperature += alpha_warming * INITIAL_TEMPERATURE;
 
 				}
 				graph.invert_arc(random_arc[1], random_arc[0]);
@@ -286,7 +280,8 @@ double Schedule::solve_using_SA(void)
 		debug("\t%d\t%d", move_acceptance, moves_without_improvement);
 
 
-		if (mode == WARMING && move_acceptance >= WARMING_THRESHOLD)
+		if (mode == WARMING && move_acceptance >= warming_threshold * max_moves_without_improvement) 
+			//wziete z dupy
 		{
 			move_acceptance = 0;
 			mode = COOLING;
@@ -294,10 +289,10 @@ double Schedule::solve_using_SA(void)
 		}
 
 
-		else if (mode == COOLING && move_acceptance >= COOLING_AGE_LENGTH)
+		else if (mode == COOLING && move_acceptance >= cooling_age_length)
 		{
 
-			temperature *= ALPHA_COOLING;
+			temperature *= alpha_cooling;
 			move_acceptance = 0;
 		}
 
@@ -314,10 +309,10 @@ double Schedule::solve_using_SA(void)
 	}
 
 	debug("Stopped due to: ");
-	if (!(moves_without_improvement < 1000))
-		debug("moves_without_improvement >= limit");
+	if (!(moves_without_improvement < max_moves_without_improvement))
+		debug("moves_without_improvement >= limit\n");
 	else if(time_exceeded)
-		debug("time exceeded");
+		debug("time exceeded\n");
 /*
 	vector<vector<int> > clusters;
 	clusters.resize(jobs.size());
@@ -329,5 +324,6 @@ double Schedule::solve_using_SA(void)
 */
 	printf("%d\n", get_cmax());
 	print_start_times();
+	printf("\n");
 	return totaltime;
 }

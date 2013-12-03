@@ -11,12 +11,26 @@
 
 using namespace std;
 
+/* 
+i	argv[i]:
+0:	nazwa pliku wykonywanego
+1:	plik z instancja
+2:	Beasley/Taillard
+3:	limit dla noJobs
+4:	modulation (int)
+5:	alpha_warming (double)
+6: 	alpha_cooling (double)
+7:	cooling_age_length (int)
+8:	warming_threshold (double)
+9:	max_moves_without_improvement (int)
+
+*/
 int main(int argc, char* argv[])
 {
 
 	int instance_format = INST_BEASLEY;
 	int limit = 0;
-	
+	double totaltime;
 	// INTERPRETACJA ARGUMENTOW WIERSZA POLECEN
 	/*
 		WYBOR FORMATU INSTANCJI 
@@ -50,10 +64,14 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	//pamietamy argumenty z maina (potrzebne do testow)
+	
 
 	 // LICZBA ZADAN I MASZYN - odczytywanie 1-ego wiersza
 	int noJobs, noMachines;
-	fscanf(source, "%d %d\n", &noJobs, &noMachines);
+	long int smieci;
+	int lower_bound, upper_bound;
+	fscanf(source, "%d %d %ld %ld %d %d\n", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
 
 	//s - uszeregowanie
 	Schedule s(noMachines);
@@ -157,16 +175,31 @@ int main(int argc, char* argv[])
 	if(fclose(source) != 0)
 		printf("Blad zamkniecia pliku %s!\n", argv[1]);
 	
+	//jesli jest tylko 1 zadane, to rozwiazanie jest gotowe
+	if(noJobs == 1)
+	{
+		s.create_graph();
+		printf("%d\n", s.get_cmax());
+		s.print_start_times();
+		printf("\n");
+	}
 	//rozwiazanie metoda simulated annealing
-	double totaltime = s.solve_using_SA();
+	else 
+		totaltime = s.solve_using_SA();
 
 	//zapisywanie wynikow jakosciowych do pliku
         
-        char buffer[40];
+    char buffer[40];
 	sprintf(buffer, "wyniki_%d_%s", noJobs, argv[1]);
 	FILE *times;
 	times = fopen(buffer, "w");
-	fprintf(times, "%s\t%d\t%d\t%f\t%d\n", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
+	printf("\nOtworzono plik: %s\n", buffer);
+	fprintf(times, "%s\t%d\t%d\t%f\t%d", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
+	if(instance_format == INST_TAILLARD)
+		fprintf(times, "\t%d\t%d\n", lower_bound, upper_bound);
+	else 
+		fprintf(times, "\n");
+
 	if(fclose(times) != 0)
 		printf("Blad zamkniecia pliku %s!\n", buffer);
 
