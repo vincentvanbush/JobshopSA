@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cctype>
+#include <list>
 #include "Graph.h"
 #include "Schedule.h"
 #define PB push_back
@@ -18,16 +19,24 @@ i	argv[i]:
 2:	Beasley/Taillard
 3:	limit dla noJobs
 4:	modulation (int)
-5:	alpha_warming (double)
-6: 	alpha_cooling (double)
-7:	cooling_age_length (int)
-8:	warming_threshold (double)
-9:	max_moves_without_improvement (int)
+5:	initial_temperature (double)
+6:      alpha_warming (double)
+7: 	alpha_cooling (double)
+8:	cooling_age_length (int)
+9:	warming_threshold (double)
+10:	max_moves_without_improvement (int)
 
 */
 int main(int argc, char* argv[])
 {
-
+        int modulation = 1;
+        double initial_temperature = 100;
+        double alpha_warming = 1.0;
+        double alpha_cooling = 0.85;
+        int cooling_age_length = 300;
+        double warming_threshold = 0.9;
+        int max_moves_without_improvement = 1000;
+        
 	int instance_format = INST_BEASLEY;
 	int limit = 0;
 	double totaltime;
@@ -52,8 +61,19 @@ int main(int argc, char* argv[])
 			else if (tolower(argv[2][0]) == 'b') instance_format = INST_BEASLEY;
 			else printf("Niewlasciwy parametr formatu instancji - domyslnie Beasley\n");
 			if (argc >= 4)
-				limit = atoi(argv[3]);
+                        {
+				if (atoi(argv[3]) != 0) limit = atoi(argv[3]);
+                                if (argc >= 5) if (atoi(argv[4]) != 0) modulation = atoi(argv[4]);
+                                if (argc >= 6) if (atof(argv[5]) != 0) initial_temperature  = atof(argv[5]);
+                                if (argc >= 7) if (atof(argv[6]) != 0) alpha_warming  = atof(argv[6]);
+                                if (argc >= 8) if (atof(argv[7]) != 0) alpha_cooling  = atof(argv[7]);
+                                if (argc >= 9) if (atoi(argv[8]) != 0) cooling_age_length  = atoi(argv[8]);
+                                if (argc >= 10) if (atof(argv[9]) != 0) warming_threshold  = atof(argv[9]);
+                                if (argc >= 11) if (atoi(argv[10]) != 0) max_moves_without_improvement  = atoi(argv[10]);
+                                
+                        }
 		}
+                
 	}
 
 	// OTWIERANIE PLIKU PODANEGO W 1 ARGUMENCIE
@@ -185,7 +205,7 @@ int main(int argc, char* argv[])
 	}
 	//rozwiazanie metoda simulated annealing
 	else 
-		totaltime = s.solve_using_SA();
+		totaltime = s.solve_using_SA(modulation, initial_temperature, alpha_warming, alpha_cooling, cooling_age_length, warming_threshold, max_moves_without_improvement);
 
 	//zapisywanie wynikow jakosciowych do pliku
         

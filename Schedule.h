@@ -23,7 +23,7 @@ public:
 	int get_cmax(void); // zwraca Cmax
 	vector<int> get_start_times(void);
 	vector<int> get_job_lengths(void);
-	double solve_using_SA(int modulation, double alpha_warming, double alpha_cooling, int cooling_age_length, double warming_threshold, int max_moves_without_improvement);
+	double solve_using_SA(int modulation, double initial_temperature, double alpha_warming, double alpha_cooling, int cooling_age_length, double warming_threshold, int max_moves_without_improvement);
 	bool success_chance(int cmax, int new_cmax, double temperature, double modulation);
 	vector<int> select_arc(deque<int> critpath);
 	void print_start_times(void);

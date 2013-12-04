@@ -177,12 +177,19 @@ vector<int> Schedule::select_arc(deque<int> critpath)
 	return selected_arc;
 }
 
-double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, double alpha_cooling = 0.85, int cooling_age_length = 300, double warming_threshold = 0.9, int max_moves_without_improvement = 1000)
+double Schedule::solve_using_SA(int modulation, double initial_temperature, double alpha_warming, double alpha_cooling, int cooling_age_length, double warming_threshold, int max_moves_without_improvement)
 {
-
-	srand(time(NULL));
+        
+        srand(time(NULL));
 	int mode; //ogrzewamy / oziebiamy
-	int move_acceptance;
+	int accepted_moves;
+        list<bool> last_moves;
+        
+        const int last_moves_size = 500;
+        last_moves.resize(last_moves_size);
+        std::fill(last_moves.begin(), last_moves.end(), false);
+        int accepted_moves_out_of_last_n = 0;
+        
 	double temperature;
 	int cmax;
 	int best_cmax;
@@ -193,14 +200,12 @@ double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, 
 
 	deque<int> crit_path;
 	mode = WARMING;
-	move_acceptance = 0;
-	temperature = INITIAL_TEMPERATURE;
+	accepted_moves = 0;
+	temperature = initial_temperature;
 	vector<int> random_arc;
 	random_arc.resize(2);
 	int new_cmax;
 	bool time_exceeded;
-	bool cold_as_ice = false; //nie udalo sie wykonac X ruchow - za niska temp
-	//powyzsze mozna chyba wywalic, bo wiaze sie z tym failed_moves
 	bool cmax_is_optimal = false; //przydaloby sie odczytac boundy z instancji i jesli trafilismy, to przerwac petlle while
 	int moves_without_improvement = 0;
 	int max_temperature;
@@ -234,7 +239,14 @@ double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, 
 
 		if(new_cmax < cmax)
 		{
-			move_acceptance++;
+                        if (mode == WARMING)
+                        {
+                            last_moves.push_back(true);
+                            if (last_moves.front() == false)
+                                accepted_moves_out_of_last_n++;
+                            last_moves.pop_front();
+                        }
+			accepted_moves++;
 			cmax = new_cmax;
 			debug(" +a\t");
 			if (new_cmax <= best_cmax)
@@ -246,19 +258,35 @@ double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, 
 		}
 		else if (new_cmax == cmax)
 		{
-			//move_acceptance++;
+			accepted_moves++;
 			debug("==\t");
 			moves_without_improvement++;
+                        if (mode == WARMING)
+                        {
+                            last_moves.push_back(true);
+                            if (last_moves.front() == false)
+                                accepted_moves_out_of_last_n++;
+                            last_moves.pop_front();
+                        }
 		}
 		else
 		{
 			if(success_chance(cmax, new_cmax, temperature, modulation) == true)
 			{
 				//failed_moves = 0;
-				move_acceptance++;
+				accepted_moves++;
 				cmax = new_cmax;
 				debug(" -a\t");
 				moves_without_improvement++;
+                                if (mode == WARMING)
+                                {
+                                    last_moves.push_back(true);
+                                    if (last_moves.front() == false)
+                                    {
+                                        accepted_moves_out_of_last_n++;
+                                    }
+                                    last_moves.pop_front();
+                                }
 			}
 			else // success_chance == false, brak szansy na powodzenie ruchu
 			{
@@ -266,9 +294,15 @@ double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, 
 				moves_without_improvement++;
 				if(mode == WARMING)
 				{
-					move_acceptance = 0;
-					temperature += alpha_warming * INITIAL_TEMPERATURE;
-
+                                        if (accepted_moves > cooling_age_length/10)
+                                        {
+                                                accepted_moves = 0;
+                                                temperature += alpha_warming * initial_temperature;
+                                        }
+                                        last_moves.push_back(false);
+                                        if (last_moves.front() == true)
+                                            accepted_moves_out_of_last_n--;
+                                        last_moves.pop_front();
 				}
 				graph.invert_arc(random_arc[1], random_arc[0]);
 				graph.set_arc_length(random_arc[0], random_arc[1], vertex_weights[random_arc[0]]);
@@ -277,23 +311,23 @@ double Schedule::solve_using_SA(int modulation = 1, double alpha_warming = 1.0, 
 
 		debug("%4.2f\t", temperature);
 		debug(mode == WARMING ? "+" : "-");
-		debug("\t%d\t%d", move_acceptance, moves_without_improvement);
+		debug("\t%d\t%d\t%4.2f\t", accepted_moves, moves_without_improvement, (double)accepted_moves_out_of_last_n / last_moves_size);
 
 
-		if (mode == WARMING && move_acceptance >= warming_threshold * max_moves_without_improvement) 
+		if (mode == WARMING && (double)accepted_moves_out_of_last_n / last_moves_size >= warming_threshold) 
 			//wziete z dupy
 		{
-			move_acceptance = 0;
+			accepted_moves = 0;
 			mode = COOLING;
 			max_temperature = temperature;
 		}
 
 
-		else if (mode == COOLING && move_acceptance >= cooling_age_length)
+		else if (mode == COOLING && accepted_moves >= cooling_age_length)
 		{
 
 			temperature *= alpha_cooling;
-			move_acceptance = 0;
+			accepted_moves = 0;
 		}
 
 		clock_gettime(CLOCK_REALTIME, &stop);
