@@ -186,10 +186,15 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 	int accepted_moves;
         list<bool> last_moves;
         
+        vector<int> last_inverted_arc;
+        last_inverted_arc.resize(2);
+        
         const int last_moves_size = 500;
         last_moves.resize(last_moves_size);
         std::fill(last_moves.begin(), last_moves.end(), false);
         int accepted_moves_out_of_last_n = 0;
+        
+        bool halt = false;
         
 	double temperature;
 	int cmax;
@@ -218,6 +223,7 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 
 	while (moves_without_improvement < max_moves_without_improvement && !cmax_is_optimal && !time_exceeded)
 	{
+                
 		//debug("calculating critical path from %d to %d\n", 0, operations_number + 1);
 		crit_path = graph.critical_path(0, operations_number + 1);
 		cmax = get_cmax();
@@ -226,13 +232,21 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 		do
 		{
 			random_arc = select_arc(crit_path);
+                        
 			++attempts;
+                        if (attempts > 100000)
+                        {
+                            halt = true;
+
+                            break;
+                        }
 		}
 		while (random_arc[0] == 0 || random_arc[1] == operations_number + 1 || (random_arc[1] - random_arc[0] == 1));
-		//debug("[%d attempts] ", attempts);
-
-
+		
+                if (halt) break;
+                
 		graph.invert_arc(random_arc[0], random_arc[1]);
+                last_inverted_arc = random_arc;
 		graph.set_arc_length(random_arc[1], random_arc[0], vertex_weights[random_arc[1]]);
 
 		new_cmax = get_cmax();

@@ -91,7 +91,10 @@ int main(int argc, char* argv[])
 	int noJobs, noMachines;
 	long int smieci;
 	int lower_bound, upper_bound;
-	fscanf(source, "%d %d %ld %ld %d %d\n", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
+        if (instance_format == INST_TAILLARD)
+                fscanf(source, "%d %d %ld %ld %d %d\n", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
+        else
+            fscanf(source, "%d %d", &noJobs, &noMachines);
 
 	//s - uszeregowanie
 	Schedule s(noMachines);
@@ -209,11 +212,12 @@ int main(int argc, char* argv[])
 
 	//zapisywanie wynikow jakosciowych do pliku
         
-    char buffer[40];
-	sprintf(buffer, "wyniki_%d_%s", noJobs, argv[1]);
+    //char buffer[40];
+	//sprintf(buffer, "wyniki_%d_%s", noJobs, argv[1]);
+	char buffer[] = "wyniki.txt";
 	FILE *times;
-	times = fopen(buffer, "w");
-	printf("\nOtworzono plik: %s\n", buffer);
+	times = fopen(buffer, "a");
+	//fprintf(stderr, "\nOtworzono plik: %s\n", buffer);
 	fprintf(times, "%s\t%d\t%d\t%f\t%d", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
 	if(instance_format == INST_TAILLARD)
 		fprintf(times, "\t%d\t%d\n", lower_bound, upper_bound);
