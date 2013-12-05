@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 	long int smieci;
 	int lower_bound, upper_bound;
         if (instance_format == INST_TAILLARD)
-                fscanf(source, "%d %d %ld %ld %d %d\n", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
+                fscanf(source, "%d %d %ld %ld %d %d", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
         else
             fscanf(source, "%d %d", &noJobs, &noMachines);
 
@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
 	FILE *times;
 	times = fopen(buffer, "a");
 	//fprintf(stderr, "\nOtworzono plik: %s\n", buffer);
-	fprintf(times, "%s\t%d\t%d\t%f\t%d", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
+	fprintf(times, "%s\t%d\t%d\t%f\t%d\n", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
 	if(instance_format == INST_TAILLARD)
 		fprintf(times, "\t%d\t%d\n", lower_bound, upper_bound);
 	else 

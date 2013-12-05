@@ -1,7 +1,7 @@
 #include "Schedule.h"
 #include <list>
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #define debug(...) fprintf(stderr, __VA_ARGS__)
@@ -330,7 +330,6 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 
 
 		if (mode == WARMING && (double)accepted_moves_out_of_last_n / last_moves_size >= warming_threshold) 
-			//wziete z dupy
 		{
 			accepted_moves = 0;
 			mode = COOLING;
@@ -356,12 +355,13 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 
 		debug("\n");
 	}
-
+#ifdef DEBUG
 	debug("Stopped due to: ");
 	if (!(moves_without_improvement < max_moves_without_improvement))
 		debug("moves_without_improvement >= limit\n");
 	else if(time_exceeded)
 		debug("time exceeded\n");
+#endif
 /*
 	vector<vector<int> > clusters;
 	clusters.resize(jobs.size());
