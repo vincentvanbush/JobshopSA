@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
 	FILE *times;
 	times = fopen(buffer, "a");
 	//fprintf(stderr, "\nOtworzono plik: %s\n", buffer);
-	fprintf(times, "%s\t%d\t%d\t%f\t%d\n", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
+	fprintf(times, "%s\t%d\t%d\t%f\t%d", argv[1], noJobs, noMachines, totaltime, s.get_cmax());
 	if(instance_format == INST_TAILLARD)
 		fprintf(times, "\t%d\t%d\n", lower_bound, upper_bound);
 	else 
@@ -226,6 +226,8 @@ int main(int argc, char* argv[])
 
 	if(fclose(times) != 0)
 		printf("Blad zamkniecia pliku %s!\n", buffer);
+
+	fprintf(stderr, "przetworzono %s\n", argv[1]);
 
 	return 0;
 }

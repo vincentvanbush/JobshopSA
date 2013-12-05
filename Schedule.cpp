@@ -348,7 +348,7 @@ double Schedule::solve_using_SA(int modulation, double initial_temperature, doub
 		totaltime += (double) (stop.tv_sec - start.tv_sec)+1.e-9*(stop.tv_nsec - start.tv_nsec);
 
 		//jesli przekroczono okreslona liczbe sekund
-		if(totaltime > 180.0)
+		if(totaltime > 300.0)
 			time_exceeded = true;
 
 		clock_gettime(CLOCK_REALTIME, &start);
