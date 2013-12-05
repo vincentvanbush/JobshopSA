@@ -1,3 +1,16 @@
+*.txt
+*.out
+*.in
+*.dll
+*.zip
+Makefile
+*.inc
+*.mk
+*.xml
+*.res
+*.bat
+*.exe
+
 *.gv
 *.png
 
