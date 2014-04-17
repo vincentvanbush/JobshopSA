@@ -25,16 +25,27 @@ public:
 	int get_vertices_number(); // zwraca liczbe wierzcholkow grafu
 	void add_arc(int from, int to, int length); // dodaje luk z from do to o dlugoœci length
 	Arc get_arc(int from, int to); // zwraca dane luku z from do to
+<<<<<<< HEAD
 	int get_arc_length(int from, int to); // zwraca dlugośc luku z from do to
 	void set_arc_length(int from, int to, int length); // ustawia dlugośc luku z from do to
+=======
+	int get_arc_length(int from, int to); // zwraca długość łuku z from do to
+	void set_arc_length(int from, int to, int length); // ustawia długość łuku z from do to
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	bool arc_exists(int from, int to); // okresla, czy istnieje luk z from do to
 	void delete_arc(int from, int to); // usuwa luk z from do to
 	void invert_arc(int from, int to); // odwraca zwrot luku z from do to (tworzac luk z to do from)
 	deque<int> topological_sort(); // zwraca porzadek topologiczny wierzcholkow grafu
 	vector<int> max_distances(int source); // zwraca wektor dlugosci najdluzszych sciezek z source do kazdego wierzcholka
+<<<<<<< HEAD
 	deque<int> critical_path(int source, int sink); // zwraca sciezke krytyczna z source do sink
 	void create_acyclic_clique(vector<int> vertices, vector<int> lengths); // tworzy w grafie acyklicznie zorientowana klike w ustalonym porzadku
 	void export_dot(vector<vector<int> > clusters); // eksportuje graf do jezyka DOT (diagnostyka)
+=======
+	deque<int> critical_path(int source, int sink); // zwraca scieżke krytyczna z source do sink
+	void create_acyclic_clique(vector<int> vertices, vector<int> lengths); // tworzy w grafie acyklicznie zorientowana klike w ustalonym porzadku
+	void export_dot(vector<vector<int> > clusters); // eksportuje graf do języka DOT (na razie brzydko :<)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 private:
 	void dfs_visit_topo(int node); // wywoluje procedure DFS dla sortowania topologicznego
 	deque<int> topological_order; // topologiczny porzadek wierzcholkow ustalony w metodzie topological_sort()

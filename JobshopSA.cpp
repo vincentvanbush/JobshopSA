@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+// JobshopSA.cpp : Defines the entry point for the console application.
+//
+
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 #include <cstdio>
 #include <cctype>
 #include <list>
@@ -9,6 +15,7 @@
 
 using namespace std;
 
+<<<<<<< HEAD
 int main(int argc, char* argv[])
 {
     double modulation = 0.85;
@@ -18,6 +25,32 @@ int main(int argc, char* argv[])
     int cooling_age_length = 300;
     double warming_threshold = 0.95;
     int max_moves_without_improvement = 2000;
+=======
+/* 
+i	argv[i]:
+0:	nazwa pliku wykonywanego
+1:	plik z instancja
+2:	Beasley/Taillard
+3:	limit dla noJobs
+4:	modulation (int)
+5:	initial_temperature (double)
+6:      alpha_warming (double)
+7: 	alpha_cooling (double)
+8:	cooling_age_length (int)
+9:	warming_threshold (double)
+10:	max_moves_without_improvement (int)
+
+*/
+int main(int argc, char* argv[])
+{
+        int modulation = 1;
+        double initial_temperature = 100;
+        double alpha_warming = 1.0;
+        double alpha_cooling = 0.85;
+        int cooling_age_length = 300;
+        double warming_threshold = 0.9;
+        int max_moves_without_improvement = 1000;
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
         
 	int instance_format = INST_BEASLEY;
 	int limit = 0;
@@ -43,9 +76,23 @@ int main(int argc, char* argv[])
 			else if (tolower(argv[2][0]) == 'b') instance_format = INST_BEASLEY;
 			else printf("Niewlasciwy parametr formatu instancji - domyslnie Beasley\n");
 			if (argc >= 4)
+<<<<<<< HEAD
             {
 				if (atoi(argv[3]) != 0) limit = atoi(argv[3]);       
             }
+=======
+                        {
+				if (atoi(argv[3]) != 0) limit = atoi(argv[3]);
+                                if (argc >= 5) if (atoi(argv[4]) != 0) modulation = atoi(argv[4]);
+                                if (argc >= 6) if (atof(argv[5]) != 0) initial_temperature  = atof(argv[5]);
+                                if (argc >= 7) if (atof(argv[6]) != 0) alpha_warming  = atof(argv[6]);
+                                if (argc >= 8) if (atof(argv[7]) != 0) alpha_cooling  = atof(argv[7]);
+                                if (argc >= 9) if (atoi(argv[8]) != 0) cooling_age_length  = atoi(argv[8]);
+                                if (argc >= 10) if (atof(argv[9]) != 0) warming_threshold  = atof(argv[9]);
+                                if (argc >= 11) if (atoi(argv[10]) != 0) max_moves_without_improvement  = atoi(argv[10]);
+                                
+                        }
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 		}
                 
 	}
@@ -64,7 +111,11 @@ int main(int argc, char* argv[])
 	 // LICZBA ZADAN I MASZYN - odczytywanie 1-ego wiersza
 	int noJobs, noMachines;
 	long int smieci;
+<<<<<<< HEAD
 	int lower_bound = 0, upper_bound = 0;
+=======
+	int lower_bound, upper_bound;
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
         if (instance_format == INST_TAILLARD)
                 fscanf(source, "%d %d %ld %ld %d %d", &noJobs, &noMachines, &smieci, &smieci, &lower_bound, &upper_bound);
         else
@@ -72,8 +123,11 @@ int main(int argc, char* argv[])
 
 	//s - uszeregowanie
 	Schedule s(noMachines);
+<<<<<<< HEAD
 	s.lower_bound = lower_bound;
 	s.upper_bound = upper_bound;
+=======
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 
 	//wektory m - machines, t - times --> dla danego Joba
 	vector<int> m, t;
@@ -129,7 +183,11 @@ int main(int argc, char* argv[])
 		{
 			tailard_times[i].clear();
 		}
+<<<<<<< HEAD
 		// odczytalismy juz noJobs i noMachines, teraz pomijamy smieci z pierwszego wiersza
+=======
+		// odczytalismy już noJobs i noMachines, teraz pomijamy smieci z pierwszego wiersza
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 		char skip[256];
 		void *result = fgets(skip, 256, source);
 		// pomijamy smieci ("Times")
@@ -188,6 +246,11 @@ int main(int argc, char* argv[])
 
 	//zapisywanie wynikow jakosciowych do pliku
         
+<<<<<<< HEAD
+=======
+    //char buffer[40];
+	//sprintf(buffer, "wyniki_%d_%s", noJobs, argv[1]);
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	char buffer[] = "wyniki.txt";
 	FILE *times;
 	times = fopen(buffer, "a");
@@ -201,7 +264,11 @@ int main(int argc, char* argv[])
 	if(fclose(times) != 0)
 		printf("Blad zamkniecia pliku %s!\n", buffer);
 
+<<<<<<< HEAD
 	//fprintf(stderr, "przetworzono %s\n", argv[1]);
+=======
+	fprintf(stderr, "przetworzono %s\n", argv[1]);
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 
 	return 0;
 }

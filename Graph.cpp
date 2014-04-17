@@ -180,7 +180,12 @@ vector<int> Graph::max_distances(int source)
 		Zwraca maksymalne odleglosci z source do kazdego wierzcholka.
 		Algorytm jest zmodyfikowana wersja procedury znajdowania minimalnych odleglosci w acyklicznym
 		grafie skierowanym (vide folie z wykladu) - modyfikacja polegala na zamienieniu +INFINITY
+<<<<<<< HEAD
 		na 0 i min na max. 
+=======
+		na 0 i min na max.
+		Moglem dopisac obok odpowiednie linie pseudokodu, ale chyba mi sie nie chcialo ;)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	*/
 	int n = vertices_number;
 	vector<int> distance;
@@ -191,6 +196,10 @@ vector<int> Graph::max_distances(int source)
 	for (int j=1; j<n; j++)
 		distance[topo[j]] = 0;
 
+<<<<<<< HEAD
+=======
+	// tu uwaga: zewnetrzna petla uzywa j, wewnetrzna i (odpowiada to pseudokodowi z folii)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	for (int j=1; j<n; j++)
 	{
 		for (int i=0; i<incoming_arcs[topo[j]].size(); i++)
@@ -216,7 +225,12 @@ deque<int> Graph::critical_path(int source, int sink)
 {
 	/*
 		Zwraca przebieg sciezki krytycznej z source do sink na podstawie wektora maksymalnych
+<<<<<<< HEAD
 		odleglosci z source (zrodlo: folie z wykladu).
+=======
+		odleglosci z source.
+		Metoda zostala zaczerpnieta z folii z wykladu (odpowiedni pseudokod w komentarzach)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	*/
 	vector<int> d = max_distances(source);
 
@@ -254,6 +268,7 @@ deque<int> Graph::critical_path(int source, int sink)
 void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 {
 	/*
+<<<<<<< HEAD
 		Metoda tworzy luki dysjunkcyjne miedzy kazda para wierzcholkow z vertices,
 		przy czym wszystkie luki wychodzace z wierzcholka i maja dlugosc lengths[i],
 		od razu nadajac tym lukom zwroty w sposob gwarantujacy acyklicznosc.
@@ -261,6 +276,22 @@ void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 		Dla kazdego kolejnego wierzcholka dodajemy luk zorientowany w strone jego sasiadow,
 		z ktorymi jeszcze nie jest polaczony (z pierwszego wierzcholka tworzymy luki do
 		wszystkich pozostalych, z drugiego do wszystkich poza pierwszym itd.)
+=======
+		Metoda tworzy w grafie acyklicznie zorientowana klike zlozona z wierzcholkow vertices,
+		ze zrodlem w wierzcholku pierwszym i ujsciem w ostatnim.
+
+		Dziala to w ten sposob, ze dla kazdego kolejnego wierzcholka dodajemy luk zorientowany
+		w strone jego sasiadow, z ktorymi jeszcze nie jest polaczony (z pierwszego wierzcholka
+		tworzymy luki do wszystkich pozostalych, z drugiego do wszystkich poza pierwszym itd.)
+
+		Dodatkowo ustalamy dlugosci kazdego z lukow emanujacych z poszczegolnych wierzcholkow,
+		co bedzie przydatne w algorytmie szeregowania, poniewaz kazdy luk emanujacy z danego
+		wierzcholka powinien miec taka sama dlugosc.
+
+		(Nie wiem, czy nazwa "acyklicznie zorientowana klika" jest poprawna, ale chyba wiemy,
+		o co chodzi. Chodzi o utworzenie skierowanego odpowiednika nieskierowanej kliki,
+		czyli podgrafu pelnego...)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	*/
 	for (int i=0; i<vertices.size(); i++)
 	{
@@ -276,9 +307,12 @@ void Graph::create_acyclic_clique(vector<int> vertices, vector<int> lengths)
 
 void Graph::export_dot(vector<vector<int> > clusters)
 {
+<<<<<<< HEAD
 	/*
 		Eksport grafu do formatu DOT (do celow diagnostycznych)
 	*/
+=======
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	FILE *f = fopen("graf.txt", "w");
 	fprintf(f, "digraph foo {\nrankdir=\"LR\";\npencolor=\"white\";");
 	for (int i=0; i<clusters.size(); i++)
@@ -308,7 +342,11 @@ void Graph::dfs_visit_topo(int node)
 	/*
 		Glowna czesc procedury DFS dla sortowania topologicznego. Jezeli napotkamy wierzcholek, ktory
 		juz oznaczylismy jako aktualnie przetwarzany, ustawiamy flage wykrytego cyklu i wychodzimy.
+<<<<<<< HEAD
 		(Taka sytuacja nie moze miec miejsca w praktyce, ale wykrywanie bylo potrzebne w diagnostyce)
+=======
+		Jesli flaga cyklu jest juz ustawiona, takze wychodzimy. :)
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	*/
 	if (cycle_flag) return;
 	if (dfs_temp_mark[node])

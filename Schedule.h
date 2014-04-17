@@ -23,13 +23,20 @@ public:
 	int get_cmax(void); // zwraca Cmax
 	vector<int> get_start_times(void);
 	vector<int> get_job_lengths(void);
+<<<<<<< HEAD
 	double solve_using_SA(double modulation, double initial_temperature, double alpha_warming, double alpha_cooling, int cooling_age_length, double warming_threshold, int max_moves_without_improvement);
+=======
+	double solve_using_SA(int modulation, double initial_temperature, double alpha_warming, double alpha_cooling, int cooling_age_length, double warming_threshold, int max_moves_without_improvement);
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 	bool success_chance(int cmax, int new_cmax, double temperature, double modulation);
 	vector<int> select_arc(deque<int> critpath);
 	void print_start_times(void);
 	Graph graph; // graf dysjunkcyjny
+<<<<<<< HEAD
 	int lower_bound;
 	int upper_bound;
+=======
+>>>>>>> 53ba009455e5be27018416b55f157f18276bc4e0
 private:
 	Jobs jobs; // przechowuje zlecenia - kazde zlecenie ma postac pair<times, machines>
 	
